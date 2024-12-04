@@ -35,11 +35,16 @@ final class FetchNetworkService: NetworkService {
                         continuation.resume(throwing: NetworkError.noData)
                         return
                     }
-                    guard let decodedResponse = try? JSONDecoder().decode(T.self, from: data) else {
+
+                    do {
+                        let decodedResponse = try JSONDecoder().decode(T.self, from: data)
+                        continuation.resume(returning: decodedResponse)
+                        return
+                    } catch {
                         continuation.resume(throwing: NetworkError.decodeError)
+                        print("DECODING ERROR: \(error)")
                         return
                     }
-                    continuation.resume(returning: decodedResponse)
                 }
             task.resume()
         }

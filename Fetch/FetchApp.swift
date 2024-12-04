@@ -1,17 +1,12 @@
-//
-//  FetchApp.swift
-//  Fetch
-//
-//  Created by Will Nixon on 12/4/24.
-//
-
 import SwiftUI
 
 @main
 struct FetchApp: App {
+    let repo = FetchRepo(networkService: FetchNetworkService())
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RecipeListView(viewModel: RecipeListViewModel(repo: repo))
         }
     }
 }
