@@ -1,5 +1,3 @@
-@testable import Fetch
-
 final class MockFetchRepo: Repo {
     var error: Error?
     var recipes: [Recipe]?

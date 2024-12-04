@@ -6,6 +6,7 @@ final class FetchRepo: Repo {
     }
 
     func getRecipes() async throws -> [Recipe] {
-        try await networkService.sendRequest(endpoint: FetchEndpoint.recipes)
+        let response: RecipeListDto = try await networkService.sendRequest(endpoint: FetchEndpoint.recipes)
+        return response.recipes.map(Recipe.init(from:))
     }
 }
