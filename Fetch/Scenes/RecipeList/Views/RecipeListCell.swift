@@ -66,6 +66,7 @@ struct RecipeListCell: View {
             }
 
             Text(recipe.name)
+                .foregroundColor(FetchColors.richBlack)
                 .font(.subheadline)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
