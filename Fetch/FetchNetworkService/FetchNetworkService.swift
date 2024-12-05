@@ -14,20 +14,22 @@ final class FetchNetworkService: NetworkService {
 
     func sendRequest<T: Decodable>(endpoint: Endpoint) async throws -> T {
         guard let urlRequest = createRequest(endPoint: endpoint) else {
-            throw NetworkError.decodeError
+            throw NetworkError.failedToCreateRequest
         }
 
         return try await withCheckedThrowingContinuation { continuation in
             let task = session.dataTask(with: urlRequest) { data, response, _ in
                 guard response is HTTPURLResponse else {
-                    continuation.resume(throwing: NetworkError.invalidURL)
+                    continuation.resume(throwing: NetworkError.noResponse)
                     return
                 }
+
                 guard let response = response as? HTTPURLResponse, 200...299 ~= response.statusCode else {
                     continuation.resume(throwing: NetworkError.invalidStatusCode)
                     return
                 }
-                guard let data = data else {
+
+                guard let data = data, !data.isEmpty else {
                     continuation.resume(throwing: NetworkError.noData)
                     return
                 }
@@ -60,6 +62,10 @@ final class FetchNetworkService: NetworkService {
     }
 
     private func createRequest(endPoint: Endpoint) -> URLRequest? {
+        guard !endPoint.scheme.isEmpty, !endPoint.host.isEmpty else {
+            return nil
+        }
+
         var urlComponents = URLComponents()
         urlComponents.scheme = endPoint.scheme
         urlComponents.host = endPoint.host

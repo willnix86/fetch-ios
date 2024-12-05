@@ -44,15 +44,17 @@ final class FetchNetworkServiceTests: XCTestCase {
 
     func test_sendRequest_success() async throws {
         let jsonData = try! JSONEncoder().encode(
-            RecipeDto(
-                cuisine: "British",
-                name: "Test",
-                photoURLLarge: nil,
-                photoURLSmall: nil,
-                uuid: "1",
-                sourceURL: nil,
-                youtubeURL: nil
-            )
+            RecipeListDto(recipes: [
+                RecipeDto(
+                    cuisine: "British",
+                    name: "Test",
+                    photoURLLarge: nil,
+                    photoURLSmall: nil,
+                    uuid: "1",
+                    sourceURL: nil,
+                    youtubeURL: nil
+                )
+            ])
         )
 
         MockURLProtocol.mockResponses[url] = (
@@ -66,12 +68,54 @@ final class FetchNetworkServiceTests: XCTestCase {
             error: nil
         )
 
-        let result: RecipeDto = try await networkService.sendRequest(
+        let result: RecipeListDto = try await networkService.sendRequest(
             endpoint: endpoint
         )
 
-        XCTAssertEqual(result.uuid, "1")
-        XCTAssertEqual(result.name, "Test")
+        XCTAssertEqual(result.recipes.first!.uuid, "1")
+        XCTAssertEqual(result.recipes.first!.name, "Test")
+    }
+
+    func test_sendRequest_success_withEmptyRecipes() async throws {
+        let jsonData = try! JSONEncoder().encode(
+            RecipeListDto(recipes: [])
+        )
+
+        MockURLProtocol.mockResponses[url] = (
+            data: jsonData,
+            response: HTTPURLResponse(
+                url: url,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            ),
+            error: nil
+        )
+
+        let result: RecipeListDto = try await networkService.sendRequest(
+            endpoint: endpoint
+        )
+
+        XCTAssertTrue(result.recipes.isEmpty)
+    }
+
+    func test_sendRequest_emitsNoResponseError() async {
+        MockURLProtocol.mockResponses[url] = (
+            data: nil,
+            response: nil,
+            error: nil
+        )
+
+        do {
+            let _: RecipeDto = try await networkService.sendRequest(
+                endpoint: endpoint
+            )
+            XCTFail("Should throw no response error")
+        } catch NetworkError.noResponse {
+            // Expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
     }
 
     func test_sendRequest_emitsStatusCodeError() async {
@@ -92,6 +136,61 @@ final class FetchNetworkServiceTests: XCTestCase {
             )
             XCTFail("Should throw invalid status code error")
         } catch NetworkError.invalidStatusCode {
+            // Expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func test_sendRequest_emitsFailedToCreateRequestError() async {
+        struct InvalidEndpoint: Endpoint {
+            var scheme: String { "" }
+            var host: String { "" }
+            var path: String { "/invalid" }
+            var method: RequestMethod { .get }
+        }
+
+        MockURLProtocol.mockResponses[url] = (
+            data: nil,
+            response: HTTPURLResponse(
+                url: url,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            ),
+            error: nil
+        )
+
+        do {
+            let _: RecipeDto = try await networkService.sendRequest(
+                endpoint: InvalidEndpoint()
+            )
+            XCTFail("Should throw failed to create request error")
+        } catch NetworkError.failedToCreateRequest {
+            // Expected
+        } catch {
+            XCTFail("Unexpected error: \(error)")
+        }
+    }
+
+    func test_sendRequest_emitsNoDataError() async {
+        MockURLProtocol.mockResponses[url] = (
+            data: nil,
+            response: HTTPURLResponse(
+                url: url,
+                statusCode: 200,
+                httpVersion: nil,
+                headerFields: nil
+            ),
+            error: nil
+        )
+
+        do {
+            let _: RecipeDto = try await networkService.sendRequest(
+                endpoint: endpoint
+            )
+            XCTFail("Should throw invalid url error")
+        } catch NetworkError.noData {
             // Expected
         } catch {
             XCTFail("Unexpected error: \(error)")
