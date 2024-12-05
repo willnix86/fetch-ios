@@ -1,8 +1,8 @@
-struct RecipeListDto: Decodable {
+struct RecipeListDto: Codable {
     let recipes: [RecipeDto]
 }
 
-struct RecipeDto: Decodable {
+struct RecipeDto: Codable {
     let cuisine: String
     let name: String
     let photoURLLarge: String?

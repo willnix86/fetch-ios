@@ -12,13 +12,20 @@ struct RecipeListView: View {
                 case .loading:
                     ProgressView("Loading...")
                 case .error(let error):
-                    Text("Error: \(error)")
-                        .foregroundColor(.red)
+                    VStack {
+                        Text("Something went wrong.")
+                            .font(.headline)
+                            .foregroundColor(FetchColors.rasberry)
+
+                        Text("\(error)")
+                            .foregroundColor(FetchColors.richBlack)
+                            .multilineTextAlignment(.center)
+                    }
+                    .padding(.horizontal, 40)
                 case .content:
                     if viewModel.cuisines.isEmpty {
                         Text("No recipes available.")
-                            .foregroundColor(.gray)
-                            .padding()
+                            .foregroundColor(FetchColors.richBlack)
                     } else {
                         List(viewModel.cuisines, id: \.self) { cuisine in
                             Section {
