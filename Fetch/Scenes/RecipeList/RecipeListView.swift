@@ -15,19 +15,24 @@ struct RecipeListView: View {
                     Text("Error: \(error)")
                         .foregroundColor(.red)
                 case .content:
-                    if viewModel.recipes.keys.isEmpty {
+                    if viewModel.cuisines.isEmpty {
                         Text("No recipes available.")
                             .foregroundColor(.gray)
                             .padding()
                     } else {
-                        List(viewModel.recipes.keys, id: \.self) { key in
+                        List(viewModel.cuisines, id: \.self) { cuisine in
                             Section {
                                 ScrollView(.horizontal) {
                                     LazyHStack(spacing: 15) {
-                                        if let recipes = viewModel.recipes.dictionary[key] {
+                                        if let recipes = viewModel.recipesDictionary[cuisine] {
                                             ForEach(recipes, id: \.id) { recipe in
                                                 RecipeListCell(recipe: recipe)
-                                                    .task { try? await viewModel.downloadImage(for: recipe.id, key: key) }
+                                                    .task {
+                                                        try? await viewModel.downloadImage(
+                                                            for: recipe.id,
+                                                            cuisine: cuisine
+                                                        )
+                                                    }
                                             }
                                         }
                                     }
@@ -40,7 +45,7 @@ struct RecipeListView: View {
                                 ))
                                 .listRowBackground(Color.clear)
                             } header: {
-                                Text(key)
+                                Text(cuisine)
                                     .foregroundColor(FetchColors.richBlack)
                                     .font(.headline)
                             }

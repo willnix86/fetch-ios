@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 
-typealias RecipeOutput = (keys: [String], dictionary: [String: [Recipe]])
 typealias RecipeListVM = RecipeListViewModelInputs & RecipeListViewModelOutputs
 
 protocol RecipeListViewModelInputs {
@@ -10,12 +9,14 @@ protocol RecipeListViewModelInputs {
 
 protocol RecipeListViewModelOutputs {
     var viewState: ViewState { get }
-    var recipes: RecipeOutput { get }
+    var cuisines: [String] { get }
+    var recipesDictionary: [String: [Recipe]] { get }
 }
 
 final class RecipeListViewModel: ObservableObject, RecipeListVM {
     @Published var viewState: ViewState = .loading
-    @Published var recipes: RecipeOutput = ([], [:])
+    @Published var cuisines: [String] = []
+    @Published var recipesDictionary: [String: [Recipe]] = [:]
 
     private let repo: Repo
     private let session: URLSession
@@ -24,7 +25,7 @@ final class RecipeListViewModel: ObservableObject, RecipeListVM {
     init(repo: Repo) {
         self.repo = repo
         self.cache = URLCache(
-            memoryCapacity: 50 * 1024 * 1024,
+            memoryCapacity: 0,
             diskCapacity: 200 * 1024 * 1024,
             directory: FileManager.default.urls(for: .cachesDirectory, in: .userDomainMask).first
         )
@@ -57,16 +58,16 @@ final class RecipeListViewModel: ObservableObject, RecipeListVM {
         }
     }
 
-    func downloadImage(for recipeId: String, key: String) async throws {
-        guard let recipeIndex = recipes.dictionary[key]?.firstIndex(where: { $0.id == recipeId }),
-              let photoURLLarge = recipes.dictionary[key]?[recipeIndex].photoURLLarge else { return }
+    func downloadImage(for recipeId: String, cuisine: String) async throws {
+        guard let recipeIndex = recipesDictionary[cuisine]?.firstIndex(where: { $0.id == recipeId }),
+              let photoURLLarge = recipesDictionary[cuisine]?[recipeIndex].photoURLLarge else { return }
 
         let request = URLRequest(url: photoURLLarge)
 
         if let cachedResponse = cache.cachedResponse(for: request),
            let cachedImageURL = saveToDisk(data: cachedResponse.data) {
             await MainActor.run {
-                recipes.dictionary[key]?[recipeIndex].largePhotoDataURL = cachedImageURL
+                recipesDictionary[cuisine]?[recipeIndex].largePhotoDataURL = cachedImageURL
             }
             return
         }
@@ -80,7 +81,7 @@ final class RecipeListViewModel: ObservableObject, RecipeListVM {
 
         if let dataURL = saveToDisk(data: data) {
             await MainActor.run {
-                recipes.dictionary[key]?[recipeIndex].largePhotoDataURL = dataURL
+                recipesDictionary[cuisine]?[recipeIndex].largePhotoDataURL = dataURL
             }
         }
     }
@@ -104,10 +105,11 @@ final class RecipeListViewModel: ObservableObject, RecipeListVM {
             result[recipe.cuisine, default: []].append(recipe)
         }
 
-        let recipeKeys = recipeDict.keys.sorted()
+        let cuisines = recipeDict.keys.sorted()
 
         await MainActor.run {
-            self.recipes = (recipeKeys, recipeDict)
+            self.cuisines = cuisines
+            self.recipesDictionary = recipeDict
             self.viewState = .content
         }
     }
