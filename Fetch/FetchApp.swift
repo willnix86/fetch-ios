@@ -1,17 +1,22 @@
-//
-//  FetchApp.swift
-//  Fetch
-//
-//  Created by Will Nixon on 12/4/24.
-//
-
 import SwiftUI
 
 @main
 struct FetchApp: App {
+    let repo = FetchRepo(
+        networkService: FetchNetworkService(
+            session: URLSession(configuration: .default),
+            cacheDirectory: FileManager.default.urls(
+                for: .cachesDirectory,
+                in: .userDomainMask
+            ).first
+        )
+    )
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RecipeListView(
+                viewModel: RecipeListViewModel(repo: repo)
+            )
         }
     }
 }
