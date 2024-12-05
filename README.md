@@ -4,28 +4,33 @@
 3. Run the app
 
 ### Focus Areas: What specific areas of the project did you prioritize? Why did you choose to focus on these areas?
-I focused on two areas primarily or this project. 
+I focused on two primary areas for this project:
 
-First, was architecture. In order for an app to scale well, it needs to be backed by a strong architectural foundation. 
+1.	Architecture:
+Scalability requires a strong architectural foundation. Beyond implementing the MVVM pattern, I leveraged dependency injection and protocol conformance to isolate components while maintaining testability.
 
-Aside from using the MVVM pattern here, I used dependency injection and protocol conformance to ensure each aspect of the app's architecture was isolated but also highly testable - I was able to create Mock classes where needed to make testing easier.
+I also structured the app into distinct business layers: networking, repository, data, and UI/interaction. This separation ensures that logic resides in the appropriate layers, enhancing maintainability and scalability.
 
-Breaking the architecture down into clear business layers helps separate logic into appropriate areas - a networking layer, a repo layer, a data layer, and a ui/interaction layer. Again, this helps set a base for the app to scale well, ensuring that appropriate logic lives in the appropaite layers.
+3.	Testability and Resilience:
+I emphasised creating a robust, testable architecture that allowed for accurate validation of key logic while ensuring the app performs well across various scenarios.
 
 ### Time Spent: Approximately how long did you spend working on this project? How did you allocate your time?
 Suggest time: 4-5 hours
+Actual time: ~6 hours
 
-I ended up spending around 6 hours on the project - the extra time was spent perfecting two areas - create a clean UI that handled all device sizes and rotatione, and second, ensuring full coverage of the main app-logic.
+I dedicated the additional time to refining two areas (based on the suggestion that I provide a "production ready" product:
+1.	Perfecting a clean, responsive UI that handles all device sizes and rotations.
+2.	Achieving full test coverage for the core app logic.
 
-I spent roughly half the time building out the architecture-related code and logic - architecture, to me, is the basis for which all success is built on!!
-
-The rest of the time was taken up with ensuring network requests were handled correctly, and tests were accurately testing the logic
+I allocated roughly half the time to architecture-related code, as I consider it the cornerstone of a scalable and maintainable app. The remaining time was spent ensuring network requests were handled correctly and tests provided accurate validation.
 
 ### Trade-offs and Decisions: Did you make any significant trade-offs in your approach?
-My main trade-off was probably time. I believe the ensuring a rock-solid product is more important than meeting a deadline, which is partly why I over-shot the suggested timeframe for completion.
+The primary trade-off was time. While I exceeded the suggested timeframe, I believe that delivering a high-quality product outweighs the benefit of adhering to deadlines too strictly (assuming an agreement is made on this by all teams involved!). This decision allowed me to focus on creating a solid application that handles edge-cases (both stipulated and not) successfully.
 
 ### Weakest Part of the Project: What do you think is the weakest part of your project?
-The area that I have the least confidence in is probably the caching and use of Swift concurrency. For the former, I have always used third-party libraries (Kingfisher for image laoding, specifically) and it took more time seeking a solution that met the constraints laid out for the project.
-From a Swift concurrency perspective - this is an area I have not spent much time in as the projects I've worked on thus far have not utilized it. I do learn fast, but this is the first time I've truly dabbled in utilizing the new framework.
+The areas I felt less confident in were caching and Swift concurrency:
+•	Caching:
+I typically use third-party libraries (e.g., Kingfisher for image loading), but the project constraints required a custom solution. This added time as I looked for an effective alternative.
 
-### Additional Information: Is there anything else we should know? Feel free to share any insights or constraints you encountered.
+•	Swift Concurrency:
+My experience with Swift concurrency is limited as it hasn’t been a requirement in my past projects. While I learned quickly and applied it here, I recognise this as an area for future growth.
