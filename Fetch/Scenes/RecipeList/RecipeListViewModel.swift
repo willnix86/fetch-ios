@@ -1,7 +1,6 @@
 import Foundation
 import SwiftUI
 
-typealias RecipeOutput = (keys: [String], dictionary: [String: [Recipe]])
 typealias RecipeListVM = RecipeListViewModelInputs & RecipeListViewModelOutputs
 
 protocol RecipeListViewModelInputs {
@@ -10,13 +9,14 @@ protocol RecipeListViewModelInputs {
 
 protocol RecipeListViewModelOutputs {
     var viewState: ViewState { get }
-    var recipes: RecipeOutput { get }
+    var cuisines: [String] { get }
+    var recipesDictionary: [String: [Recipe]] { get }
 }
 
 final class RecipeListViewModel: ObservableObject, RecipeListVM {
-
     @Published var viewState: ViewState = .loading
-    @Published var recipes: RecipeOutput = ([], [:])
+    @Published var cuisines: [String] = []
+    @Published var recipesDictionary: [String: [Recipe]] = [:]
 
     private let repo: Repo
 
@@ -29,7 +29,7 @@ final class RecipeListViewModel: ObservableObject, RecipeListVM {
 
         do {
             let fetchedRecipes = try await repo.getRecipes()
-            createDictionary(from: fetchedRecipes)
+            await createDictionary(from: fetchedRecipes)
         } catch {
             let errorMessage: String
             if let fetchError = error as? NetworkError {
@@ -45,24 +45,32 @@ final class RecipeListViewModel: ObservableObject, RecipeListVM {
         }
     }
 
-    private func createDictionary(from recipes: [Recipe]) {
-        var recipeKeys: Set<String> = Set()
-        var recipeDict: [String: [Recipe]] = [:]
+    func downloadImage(for recipeId: String, cuisine: String) async throws {
+        guard let recipeIndex = recipesDictionary[cuisine]?.firstIndex(where: { $0.id == recipeId }),
+              let photoURLLarge = recipesDictionary[cuisine]?[recipeIndex].photoURLLarge else { return }
 
-        recipes.forEach { recipe in
-            recipeKeys.insert(recipe.cuisine)
+        do {
+            let dataURL = try await repo.fetchRecipeImage(from: photoURLLarge)
 
-            if recipeDict[recipe.cuisine] == nil {
-                let newRecipeArray: [Recipe] = [recipe]
-                recipeDict[recipe.cuisine] = newRecipeArray
-            } else {
-                recipeDict[recipe.cuisine]?.append(recipe)
+            await MainActor.run {
+                recipesDictionary[cuisine]?[recipeIndex].largePhotoDataURL = dataURL
             }
+        } catch {
+            print("Error downloading image: \(error)")
+        }
+    }
+
+    private func createDictionary(from recipes: [Recipe]) async {
+        let recipeDict = recipes.reduce(into: [String: [Recipe]]()) { result, recipe in
+            result[recipe.cuisine, default: []].append(recipe)
         }
 
-        let sortedKeys = recipeKeys.sorted(by: < )
+        let cuisines = recipeDict.keys.sorted()
 
-        self.recipes = (sortedKeys, recipeDict)
-        self.viewState = .content
+        await MainActor.run {
+            self.cuisines = cuisines
+            self.recipesDictionary = recipeDict
+            self.viewState = .content
+        }
     }
 }

@@ -6,7 +6,7 @@ struct RecipeListCell: View {
     var body: some View {
         VStack(alignment: .leading) {
             ZStack(alignment: .top) {
-                if let imageURL = recipe.photoURLLarge {
+                if let imageURL = recipe.largePhotoDataURL {
                     AsyncImage(url: imageURL) { phase in
                         if let image = phase.image {
                             image
@@ -66,6 +66,7 @@ struct RecipeListCell: View {
             }
 
             Text(recipe.name)
+                .foregroundColor(FetchColors.richBlack)
                 .font(.subheadline)
                 .multilineTextAlignment(.leading)
                 .fixedSize(horizontal: false, vertical: true)
