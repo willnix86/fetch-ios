@@ -5,9 +5,10 @@ struct Recipe: Identifiable {
     let cuisine: String
     let name: String
     let photoURLLarge: URL?
-    let photoURLSmall: URL?
     let sourceURL: URL?
     let youtubeURL: URL?
+
+    var largePhotoDataURL: URL?
 }
 
 extension Recipe {
@@ -20,12 +21,6 @@ extension Recipe {
             self.photoURLLarge = URL(string: photoURLLarge)
         } else {
             self.photoURLLarge = nil
-        }
-
-        if let photoURLSmall = response.photoURLSmall {
-            self.photoURLSmall = URL(string:photoURLSmall)
-        } else {
-            self.photoURLSmall = nil
         }
 
         if let sourceURL = response.sourceURL {

@@ -27,6 +27,7 @@ struct RecipeListView: View {
                                         if let recipes = viewModel.recipes.dictionary[key] {
                                             ForEach(recipes, id: \.id) { recipe in
                                                 RecipeListCell(recipe: recipe)
+                                                    .task { try? await viewModel.downloadImage(for: recipe.id, key: key) }
                                             }
                                         }
                                     }
@@ -45,6 +46,9 @@ struct RecipeListView: View {
                             }
                         }
                         .scrollContentBackground(.hidden)
+                        .refreshable {
+                            await viewModel.performTask()
+                        }
                     }
                 }
             }
